@@ -1,0 +1,131 @@
+---
+stages:
+  - raw
+  - build
+  - dev
+  - prod
+
+image: alpine:latest
+
+variables:
+  GIT_STRATEGY: fetch
+  KUBECONFIG: /kube.cfg
+  # CM_KUBE_CONFIG: project var - cat ~/.kube/config | base64 | pbcopy
+  CM_DEV_SCHEME: http
+  CM_IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+  CM_IMAGE_RELEASE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+  CM_NAMESPACE: $CI_PROJECT_NAME-$CI_COMMIT_REF_SLUG
+
+raw_yamllint:
+  # when: manual
+  stage: raw
+  image: python:alpine
+  script:
+    - pip install yamllint
+    - 'yamllint -d "{extends: default, rules: {line-length: {max: 120, level: warning}}}" .'
+  tags:
+    - linux
+    - docker
+
+build_binary:
+  # when: manual
+  stage: build
+  image: golang:latest
+  script:
+    - mkdir build
+    - CGO_ENABLED=0 go build -a -o ${CI_PROJECT_NAME}
+  artifacts:
+    paths:
+      - $CI_PROJECT_NAME
+    expire_in: 1 day
+  tags:
+    - linux
+    - docker
+
+build_docker:
+  # when: manual
+  stage: build
+  image: docker:stable
+  services:
+    - name: docker:dind
+      command:
+        - --insecure-registry=registry.local:4567
+  script:
+    - docker login -u ${CI_REGISTRY_USER} -p ${CI_JOB_TOKEN} ${CI_REGISTRY}
+    # - docker info
+    - docker build -t ${CM_IMAGE_TAG} .
+    - docker push ${CM_IMAGE_TAG}
+  tags:
+    - linux
+    - docker
+
+dev_deploy:
+  # when: manual
+  stage: dev
+  script:
+    - apk add sed curl
+    - curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+    - chmod u+x kubectl && mv kubectl /bin/kubectl
+    # - echo kube cfg var ${CM_KUBE_CONFIG}
+    - echo ${CM_KUBE_CONFIG} | base64 -d > ${KUBECONFIG}
+    # - kubectl config current-context
+    - sed -i "s|APP|${CI_PROJECT_NAME}|" k8s-resources.yml
+    - sed -i "s|TAG|${CI_COMMIT_REF_SLUG}|" k8s-resources.yml
+    - sed -i "s|IMAGE|${CI_REGISTRY_IMAGE}|" k8s-resources.yml
+    - sed -i "s|NAMESPACE|${CM_NAMESPACE}|" k8s-resources.yml
+    - sed -i "s|FQDN|${CM_NAMESPACE}.cluster.local|" k8s-resources.yml
+    # - cat k8s-resources.yml
+    - kubectl apply -f k8s-resources.yml
+  artifacts:
+    paths:
+      - k8s-resources.yml
+    expire_in: 1 day
+  environment:
+    name: dev/$CI_PROJECT_NAME-$CI_COMMIT_REF_SLUG
+    url: http://$CI_PROJECT_NAME-$CI_COMMIT_REF_SLUG.cluster.local
+    on_stop: dev_wipe
+  tags:
+    - linux
+    - k8s
+
+dev_wipe:
+  when: manual
+  stage: dev
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - apk add sed curl
+    - curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+    - chmod u+x kubectl && mv kubectl /bin/kubectl
+    # - echo 'kube cfg var' ${CM_KUBE_CONFIG}
+    - echo ${CM_KUBE_CONFIG} | base64 -d > /kube.cfg
+    # - kubectl config current-context
+    - kubectl delete namespaces ${CM_NAMESPACE}
+  environment:
+    name: dev/$CI_PROJECT_NAME-$CI_COMMIT_REF_SLUG
+    action: stop
+  tags:
+    - linux
+    - k8s
+
+prod_latest:
+  # when: manual
+  stage: prod
+  image: docker:stable
+  variables:
+    GIT_STRATEGY: none
+  services:
+    - name: docker:dind
+      command:
+        - --insecure-registry=registry.local:4567
+  script:
+    - docker login -u ${CI_REGISTRY_USER} -p ${CI_JOB_TOKEN} ${CI_REGISTRY}
+    # - docker info
+    - docker pull ${CM_IMAGE_TAG}
+    - docker tag ${CM_IMAGE_TAG} ${$CI_REGISTRY_IMAGE}:latest
+    - docker push ${$CI_REGISTRY_IMAGE}:latest
+  only:
+    - master
+  tags:
+    - linux
+    - docker
