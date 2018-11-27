@@ -1,10 +1,11 @@
 # build stage
 FROM golang:alpine AS build-env
-ADD main.go main.go
+COPY main.go main.go
 RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o goblin
 
 # final stage
-FROM alpine
+# hadolint ignore=DL3007
+FROM alpine:latest
 WORKDIR /app
 COPY --from=build-env /go/goblin /app/
-ENTRYPOINT ./goblin
+ENTRYPOINT ["./goblin"]
