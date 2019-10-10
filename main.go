@@ -7,10 +7,22 @@ import (
 )
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello world! Welcome %s!", r.URL.Path[1:])
+	fmt.Fprintf(w, "Hello world! Welcome %s!\n", r.URL.Path[1:])
 }
 
 func main() {
 	http.HandleFunc("/", handler)
-	log.Fatal(http.ListenAndServe(":8080", nil))
+
+	// m := &autocert.Manager{
+	// 	Cache:      autocert.DirCache("golang-autocert"),
+	// 	Prompt:     autocert.AcceptTOS,
+	// 	HostPolicy: autocert.HostWhitelist("example.org", "www.example.org"),
+	// }
+	server := &http.Server{
+		Addr: ":8080",
+		// TLSConfig: m.TLSConfig(),
+	}
+	// log.Fatal(server.ListenAndServeTLS("", ""))
+
+	log.Fatal(server.ListenAndServe())
 }
