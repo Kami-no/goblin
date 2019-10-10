@@ -25,6 +25,9 @@ func main() {
 	server := &http.Server{
 		Addr: ":8080",
 		// TLSConfig: m.TLSConfig(),
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  120 * time.Second,
 	}
 	// log.Fatal(server.ListenAndServeTLS("", ""))
 	go func() {
