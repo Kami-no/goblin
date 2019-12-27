@@ -28,7 +28,7 @@ raw_yamllint:
     - docker
 
 build_binary:
-  # when: manual
+  when: manual
   stage: build
   image: golang:latest
   script:
@@ -43,7 +43,7 @@ build_binary:
     - docker
 
 build_docker:
-  # when: manual
+  when: manual
   stage: build
   image: docker:stable
   services:
@@ -60,7 +60,7 @@ build_docker:
     - docker
 
 dev_deploy:
-  # when: manual
+  when: manual
   stage: dev
   script:
     - apk add sed curl
@@ -109,7 +109,7 @@ dev_wipe:
     - k8s
 
 prod_latest:
-  # when: manual
+  when: manual
   stage: prod
   image: docker:stable
   variables:
