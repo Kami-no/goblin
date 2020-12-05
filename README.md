@@ -18,14 +18,15 @@ Note:
 
 #### .gitlab-ci.yml
 
-Contains tasks to lint yaml, buld binary, docker-image, launch app for review in Kubernetes and retag image in the end as 'latest'.
+Contains tasks to lint yaml, build binary, docker-image, launch app for review in Kubernetes and retag image in the end as 'latest'.
 
 Requirements:
 
 * tasks are tagged, you'll need at least one runner with tags docker, k8s and linux;
-* outdated namespaces should be deleted manualy through task 'dev_wipe';
+* outdated namespaces should be deleted manually through task 'dev_wipe';
 * project var should be created `CM_KUBE_CONFIG` with base64 encoded Kubernetes config with cluster administrator permissions (CI will create separate namespaces for each branch of the project):
-```
+
+```bash
 cat ~/.kube/config | base64 | pbcopy
 ```
 
@@ -33,13 +34,13 @@ Artifacts:
 
 * binary will expire in 1 day;
 * k8s-resources.yml with full Kubernetes deployment manifest will expire in 1 day;
-* docker-image tagged letest for builds in master and tagged with commit hash always.
+* docker-image tagged latest for builds in master and tagged with commit hash always.
 
-#### Badges
+### Bazel
 
-Use the following code in README.md
-
-```
-[![Build Status](http://git.local/kami-no/goblin/badges/master/build.svg)](http://git.local/kami-no/goblin/commits/master)
-[![Coverage Report](http://git.local/kami-no/goblin/badges/master/coverage.svg)](http://git.local/kami-no/goblin/commits/master)
+```bash
+bazel build --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //...
+bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //:goblin
+bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //:image
+bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //:image-push
 ```
