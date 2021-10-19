@@ -1,6 +1,6 @@
 # build stage
 FROM golang:alpine AS build-env
-COPY main.go main.go
+COPY . .
 RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o goblin
 
 # final stage
