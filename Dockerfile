@@ -9,4 +9,4 @@ RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -tags "netgo" -ldflags '-s
 FROM alpine:latest
 WORKDIR /app
 COPY --from=build-env /opt/goblin/goblin /app/
-ENTRYPOINT ["./goblin"]
+CMD ["./goblin"]
