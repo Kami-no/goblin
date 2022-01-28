@@ -46,10 +46,10 @@ func main() {
 		Handler:      h2c.NewHandler(handler, h2s),
 	}
 
-	// log.Fatal(server.ListenAndServeTLS("", ""))
 	go func() {
 		fmt.Println("Running server...")
 		log.Fatal(server.ListenAndServe())
+		// log.Fatal(server.ListenAndServeTLS("", ""))
 	}()
 
 	// Wait for an interrupt
