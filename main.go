@@ -58,12 +58,12 @@ func main() {
 	// }
 
 	server := &http.Server{
-		Addr: fmt.Sprintf(":%v", port),
-		// TLSConfig: m.TLSConfig(),
+		Addr:         fmt.Sprintf(":%v", port),
 		ReadTimeout:  120 * time.Second,
 		WriteTimeout: 180 * time.Second,
 		IdleTimeout:  240 * time.Second,
 		Handler:      h2c.NewHandler(handler, h2s),
+		// TLSConfig:    m.TLSConfig(),
 	}
 
 	go func() {
