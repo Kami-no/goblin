@@ -14,6 +14,8 @@ import (
 	"golang.org/x/net/http2/h2c"
 )
 
+const port int = 8080
+
 func hello(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello world! Welcome %s!\n", r.URL.Path[1:])
 }
@@ -56,16 +58,16 @@ func main() {
 	// }
 
 	server := &http.Server{
-		Addr: ":8080",
-		// TLSConfig: m.TLSConfig(),
+		Addr:         fmt.Sprintf(":%v", port),
 		ReadTimeout:  120 * time.Second,
 		WriteTimeout: 180 * time.Second,
 		IdleTimeout:  240 * time.Second,
 		Handler:      h2c.NewHandler(handler, h2s),
+		// TLSConfig:    m.TLSConfig(),
 	}
 
 	go func() {
-		fmt.Println("Running server...")
+		fmt.Printf("Running server at port %v...\n", port)
 		log.Fatal(server.ListenAndServe())
 		// log.Fatal(server.ListenAndServeTLS("", ""))
 	}()

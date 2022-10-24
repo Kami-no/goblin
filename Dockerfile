@@ -1,12 +1,18 @@
 # build stage
-FROM golang:alpine AS build-env
-WORKDIR /opt/goblin
+FROM golang:1.19-alpine3.15 AS build
+
+WORKDIR /opt/build
+# hadolint ignore=DL3018
+RUN apk add --no-cache git
+
+COPY ["go.mod", "go.sum", "./"]
+RUN go mod download
+
 COPY . .
 RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -tags "netgo" -ldflags '-s -w' -o goblin
 
-# final stage
-# hadolint ignore=DL3007
-FROM alpine:latest
+# artefact stage
+FROM alpine:3.15
 WORKDIR /app
-COPY --from=build-env /opt/goblin/goblin /app/
-CMD ["./goblin"]
+COPY --from=build /opt/build/goblin /usr/local/bin/goblin
+CMD ["goblin"]
