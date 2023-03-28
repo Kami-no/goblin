@@ -13,7 +13,7 @@ RUN go test ./... \
 
 # artefact stage
 # hadolint ignore=DL3007
-FROM gcr.io/distroless/base-debian11:latest
+FROM gcr.io/distroless/static-debian11:latest
 
 COPY --from=build /opt/build/goblin /usr/local/bin/goblin
 USER 1000
