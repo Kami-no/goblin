@@ -1,36 +1,22 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 load("@bazel_gazelle//:def.bzl", "gazelle")
-load("@io_bazel_rules_docker//container:container.bzl", "container_image")
 
-## This is a gazelle anotation, change the package
 # gazelle:prefix github.com/Kami-no/goblin
 gazelle(name = "gazelle")
 
 go_library(
-    name = "go_default_library",
+    name = "goblin_lib",
     srcs = ["main.go"],
     importpath = "github.com/Kami-no/goblin",
     visibility = ["//visibility:private"],
+    deps = [
+        "@org_golang_x_net//http2:go_default_library",
+        "@org_golang_x_net//http2/h2c:go_default_library",
+    ],
 )
 
 go_binary(
     name = "goblin",
-    embed = [":go_default_library"],
+    embed = [":goblin_lib"],
     visibility = ["//visibility:public"],
-)
-
-container_image(
-    name = "image",
-    base = "@alpine_linux_amd64//image",
-    cmd = ["/goblin"],
-    files = [":goblin"],
-    stamp = True,
-)
-
-container_push(
-    name = "image-push",
-    format = "Docker",
-    image = ":image",
-    registry = "index.docker.io",
-    repository = "kami-no/goblin:latest",
 )

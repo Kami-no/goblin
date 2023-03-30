@@ -39,8 +39,12 @@ Artifacts:
 ### Bazel
 
 ```bash
+bazel build //...
+bazel build //:goblin
+bazel run //:goblin
+
+bazel run //:gazelle -- update-repos -from_file=go.mod -to_macro=deps.bzl%go_dependencies
+
 bazel build --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //...
 bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //:goblin
-bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //:image
-bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //:image-push
 ```
