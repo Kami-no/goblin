@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"runtime/debug"
 	"strconv"
 	"time"
 
@@ -42,6 +43,11 @@ func slow(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	bi, ok := debug.ReadBuildInfo()
+	if !ok {
+		log.Fatal("!ok")
+	}
+	fmt.Println(bi.Main.Version)
 	// Router
 	h2s := &http2.Server{}
 	handler := http.NewServeMux()
