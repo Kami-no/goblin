@@ -1,6 +1,5 @@
 # build stage
-ARG GO_VERSION=1.20
-FROM golang:${GO_VERSION}-bullseye AS build
+FROM golang:1.21-bookworm AS build
 
 WORKDIR /opt/build
 
@@ -13,7 +12,7 @@ RUN go test ./... \
 
 # artefact stage
 # hadolint ignore=DL3007
-FROM gcr.io/distroless/static-debian11:latest
+FROM gcr.io/distroless/static-debian12:latest
 
 COPY --from=build /opt/build/goblin /usr/local/bin/goblin
 USER 1000
