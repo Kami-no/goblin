@@ -18,28 +18,28 @@ import (
 const port int = 8080
 
 func hello(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello world! Welcome %s!\n", r.URL.Path[1:])
+	_, _ = fmt.Fprintf(w, "Hello world! Welcome %s!\n", r.URL.Path[1:])
 }
 
 func info(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Path:  %v\n", r.RequestURI)
-	fmt.Fprintf(w, "Proto: %v\n", r.Proto)
+	_, _ = fmt.Fprintf(w, "Path:  %v\n", r.RequestURI)
+	_, _ = fmt.Fprintf(w, "Proto: %v\n", r.Proto)
 }
 
 func slow(w http.ResponseWriter, r *http.Request) {
 	delaySlice, present := r.URL.Query()["delay"]
 	if !present || len(delaySlice) == 0 {
-		fmt.Fprintf(w, "Delay is not set\n")
+		_, _ = fmt.Fprintf(w, "Delay is not set\n")
 		return
 	}
 	delay, err := strconv.Atoi(delaySlice[0])
 	if err != nil {
-		fmt.Fprintf(w, "Failed to define delay: %v!\n", err)
+		_, _ = fmt.Fprintf(w, "Failed to define delay: %v!\n", err)
 		return
 	}
-	fmt.Fprintf(w, "Delay (seconds): %v\n", delay)
+	_, _ = fmt.Fprintf(w, "Delay (seconds): %v\n", delay)
 	time.Sleep(time.Duration(delay) * time.Second)
-	fmt.Fprintf(w, "Success\n")
+	_, _ = fmt.Fprintf(w, "Success\n")
 }
 
 func main() {
@@ -47,7 +47,7 @@ func main() {
 	if !ok {
 		log.Fatal("!ok")
 	}
-	fmt.Println(bi.Main.Version)
+	_, _ = fmt.Println(bi.Main.Version)
 	// Router
 	h2s := &http2.Server{}
 	handler := http.NewServeMux()
@@ -73,7 +73,7 @@ func main() {
 	}
 
 	go func() {
-		fmt.Printf("Running server at port %v...\n", port)
+		_, _ = fmt.Printf("Running server at port %v...\n", port)
 		log.Fatal(server.ListenAndServe())
 		// log.Fatal(server.ListenAndServeTLS("", ""))
 	}()
